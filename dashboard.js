@@ -62,6 +62,4 @@ async function loadFarmAndProfile() {
   currentUser.user_metadata?.username || currentUser.email;
   document.getElementById("profile-username").textContent =
   currentUser.user_metadata?.username || "(kein Benutzername)";
-
-
 }

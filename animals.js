@@ -84,7 +84,9 @@ document.getElementById("animal-form").addEventListener("submit", async (e) => {
     updated_by_email: currentUser.email
   };
 
-  const { error } = await client.from("animals").insert([payload]);
+  const { error } = await client
+    .from("animals")
+    .insert([payload]);
 
   if (error) {
     alert("Fehler beim Speichern: " + error.message);
