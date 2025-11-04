@@ -15,7 +15,7 @@ const form = document.getElementById("medication-form");
   const { data: { session } } = await client.auth.getSession();
   if (!session) {
     alert("Bitte zuerst einloggen!");
-    window.location.href = "auth.html";
+    window.location.href = "../auth.html";
     return;
   }
 
@@ -25,7 +25,7 @@ const form = document.getElementById("medication-form");
 
   document.getElementById("logout-btn").addEventListener("click", async () => {
     await client.auth.signOut();
-    window.location.href = "auth.html";
+    window.location.href = "../auth.html";
   });
 })();
 

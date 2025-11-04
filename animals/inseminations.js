@@ -8,7 +8,7 @@ let currentFarmId = localStorage.getItem("currentFarmId");
 // ---------------- Session laden ----------------
 supabase.auth.getSession().then(async ({ data }) => {
   if (!data.session) {
-    window.location.href = "auth.html"; // nicht eingeloggt → zurück zur Auth-Seite
+    window.location.href = "../auth.html"; // nicht eingeloggt → zurück zur Auth-Seite
     return;
   }
 
@@ -20,7 +20,7 @@ supabase.auth.getSession().then(async ({ data }) => {
 document.getElementById("logout-btn").addEventListener("click", async () => {
   await supabase.auth.signOut();
   localStorage.removeItem("currentFarmId");
-  window.location.href = "auth.html";
+  window.location.href = "../auth.html";
 });
 
 // ---------------- Farm + Profil laden ----------------

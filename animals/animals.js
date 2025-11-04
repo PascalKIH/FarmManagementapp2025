@@ -3,19 +3,16 @@ const SUPABASE_URL = "https://kfonugwtvqmpltfdldri.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtmb251Z3d0dnFtcGx0ZmRsZHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NDY4MDUsImV4cCI6MjA3NDMyMjgwNX0.H-9mm9JdAAhLUrhvSRf_j47POPNQR4MhcXpT3dHCa38";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Wenn deine Tabelle "animals" team/farm mit "team_id" statt "farm_id" referenziert:
-const TEAM_FIELD = "farm_id"; // ggf. "team_id" eintragen
+const TEAM_FIELD = "farm_id";
 
 /***** State *****/
 let currentUser = null;
 let currentFarmId = localStorage.getItem("currentFarmId");
 let currentAnimal = null;
 
-// Paging
+// Paging + Filter
 let page = 0;
 const pageSize = 20;
-
-// Filter
 let filterText = "";
 let filterGender = "";
 
@@ -42,67 +39,93 @@ function fmtDate(d) {
 (async function init() {
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
-    window.location.href = "auth.html";
+    window.location.href = "../auth.html";
     return;
   }
   currentUser = data.session.user;
-
-  // Navbar Username
   qs("#navbar-username").textContent = currentUser.user_metadata?.username || currentUser.email;
 
   if (!currentFarmId) {
-    // falls du Teams nutzt: hier ggf. Farm/Team laden
-    toastErr("Keine Farm/Team gewählt.");
+    console.warn("Keine Farm/Team gewählt.");
     return;
   }
 
-  // Events
   bindEvents();
-
-  // initial load
-  await populateParentSelects();
   await loadAnimals();
 })();
 
 /***** Events *****/
 function bindEvents() {
   // Desktop Filter
-  qs("#refresh-btn").addEventListener("click", () => { page = 0; loadAnimals(); });
-  qs("#search-input").addEventListener("input", debounce(() => {
+  qs("#refresh-btn")?.addEventListener("click", () => { page = 0; loadAnimals(); });
+  qs("#search-input")?.addEventListener("input", debounce(() => {
     filterText = qs("#search-input").value.trim();
     page = 0; loadAnimals();
   }, 250));
-  qs("#filter-gender").addEventListener("change", () => {
+  qs("#filter-gender")?.addEventListener("change", () => {
     filterGender = qs("#filter-gender").value;
     page = 0; loadAnimals();
   });
 
   // Mobile Offcanvas Filter
-  qs("#apply-mobile-filter").addEventListener("click", () => {
+  qs("#apply-mobile-filter")?.addEventListener("click", () => {
     filterText = qs("#search-input-m").value.trim();
     filterGender = qs("#filter-gender-m").value;
-    // Sync auf Desktopfelder (optional)
-    qs("#search-input").value = filterText;
-    qs("#filter-gender").value = filterGender;
+    // optional: in Desktop-Felder spiegeln
+    if (qs("#search-input")) qs("#search-input").value = filterText;
+    if (qs("#filter-gender")) qs("#filter-gender").value = filterGender;
     page = 0; loadAnimals();
   });
 
   // Paging
-  qs("#prev-page").addEventListener("click", () => { if (page > 0) { page--; loadAnimals(); } });
-  qs("#next-page").addEventListener("click", () => { page++; loadAnimals(); });
+  qs("#prev-page")?.addEventListener("click", () => { if (page > 0) { page--; loadAnimals(); } });
+  qs("#next-page")?.addEventListener("click", () => { page++; loadAnimals(); });
 
-  // Formular Neues Tier
+  // Formular „Neues Tier“
   const form = qs("#animal-form");
   const resetBtn = qs("#reset-form");
-  form.addEventListener("submit", onSaveAnimal);
-  resetBtn.addEventListener("click", () => form.reset());
+  form?.addEventListener("submit", onSaveAnimal);
+  resetBtn?.addEventListener("click", () => form.reset());
 
   // Logout
-  qs("#logout-btn").addEventListener("click", async () => {
+  qs("#logout-btn")?.addEventListener("click", async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("currentFarmId");
-    window.location.href = "auth.html";
+    window.location.href = "../auth.html";
   });
+}
+function isMobile() {
+  return window.innerWidth < 768;
+}
+
+// holt ALLE Tiere in Chunks (robust bei >1000 rows)
+async function fetchAllAnimals(teamId, filterText, filterGender) {
+  const PAGE = 1000;
+  let from = 0;
+  const rows = [];
+
+  while (true) {
+    let q = supabase
+      .from("animals")
+      .select("id, animal_number, animal_id, birth_date, gender, mother_id, father_id")
+      .eq("farm_id", teamId)
+      .order("animal_number", { ascending: true })
+      .range(from, from + PAGE - 1);
+
+    if (filterGender) q = q.eq("gender", filterGender);
+    if (filterText) q = q.or(`animal_number.ilike.%${filterText}%,animal_id.ilike.%${filterText}%`);
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    if (!data || data.length === 0) break;
+
+    rows.push(...data);
+    if (data.length < PAGE) break; // letzte Seite erreicht
+    from += PAGE;
+  }
+
+  return rows;
 }
 
 /***** Tiere laden (mit Filter, Paging) *****/
@@ -114,52 +137,71 @@ async function loadAnimals() {
   qs("#table-count").textContent = "";
   qs("#list-meta").textContent = "Laden…";
 
-  let query = supabase
-    .from("animals")
-    .select("id, animal_number, animal_id, birth_date, gender, mother_id, father_id", { count: "exact" })
-    .eq(TEAM_FIELD, currentFarmId)
-    .order("animal_number", { ascending: true })
-    .range(page * pageSize, page * pageSize + pageSize - 1);
+  try {
+    let data = [];
+    let total = 0;
 
-  if (filterGender) query = query.eq("gender", filterGender);
-  if (filterText) {
-    // sucht Nummer oder Tier-ID
-    query = query.or(`animal_number.ilike.%${filterText}%,animal_id.ilike.%${filterText}%`);
-  }
+    if (isMobile()) {
+      // 🔹 MOBIL: alles holen, keine Pagination
+      data = await fetchAllAnimals(currentFarmId, filterText, filterGender);
+      total = data.length;
 
-  const { data, error, count } = await query;
+      // Tabelle optional leeren (wir zeigen Cards)
+      const tbody = qs("#animal-table tbody");
+      if (tbody) tbody.innerHTML = "";
+    } else {
+      // 🔹 DESKTOP: Paged + Count
+      let query = supabase
+        .from("animals")
+        .select("id, animal_number, animal_id, birth_date, gender, mother_id, father_id", { count: "exact" })
+        .eq("farm_id", currentFarmId)
+        .order("animal_number", { ascending: true })
+        .range(page * pageSize, page * pageSize + pageSize - 1);
 
-  // End Loading
-  qs("#cards-loading").style.display = "none";
+      if (filterGender) query = query.eq("gender", filterGender);
+      if (filterText) query = query.or(`animal_number.ilike.%${filterText}%,animal_id.ilike.%${filterText}%`);
 
-  if (error) {
-    console.error(error);
-    toastErr(error.message);
+      const res = await query;
+      if (res.error) throw res.error;
+      data = res.data || [];
+      total = res.count ?? data.length;
+    }
+
+    // End Loading
+    qs("#cards-loading").style.display = "none";
+
+    // Render
+    renderCards(data);
+    if (!isMobile()) renderTable(data); // Tabelle nur Desktop
+
+    // Meta / Pager
+    if (isMobile()) {
+      qs("#list-meta").textContent = total ? `Gesamt: ${total}` : "Keine Einträge";
+      qs("#table-count").textContent = qs("#list-meta").textContent;
+    } else {
+      const from = total === 0 ? 0 : page * pageSize + 1;
+      const to = Math.min((page + 1) * pageSize, total);
+      qs("#list-meta").textContent = total ? `Zeige ${from}–${to} von ${total}` : "Keine Einträge";
+      qs("#table-count").textContent = qs("#list-meta").textContent;
+    }
+
+    // Empty state für Cards
+    if (!data || data.length === 0) qs("#cards-empty").style.display = "block";
+
+  } catch (err) {
+    console.error(err);
+    qs("#cards-loading").style.display = "none";
     qs("#list-meta").textContent = "Fehler";
-    return;
+    toastErr(err.message || "Fehler beim Laden");
   }
-
-  const total = count ?? 0;
-
-  // Render Cards (Mobile)
-  renderCards(data);
-
-  // Render Table (Desktop)
-  renderTable(data);
-
-  // Meta/Pager
-  const from = total === 0 ? 0 : page * pageSize + 1;
-  const to = Math.min((page + 1) * pageSize, total);
-  qs("#list-meta").textContent = total ? `Zeige ${from}–${to} von ${total}` : "Keine Einträge";
-  qs("#table-count").textContent = qs("#list-meta").textContent;
-
-  // empty state mobile
-  if (!data || data.length === 0) qs("#cards-empty").style.display = "block";
 }
 
+/***** Mobile Karten *****/
 function renderCards(rows) {
   const wrap = qs("#animal-cards");
+  if (!wrap) return;
   wrap.innerHTML = "";
+
   (rows || []).forEach(a => {
     const card = document.createElement("div");
     card.className = "col-12";
@@ -182,15 +224,17 @@ function renderCards(rows) {
     wrap.appendChild(card);
   });
 
-  // Actions
   wrap.querySelectorAll("button[data-action='details']").forEach(btn => {
     btn.addEventListener("click", () => openDetails(btn.dataset.id));
   });
 }
 
+/***** Desktop Tabelle *****/
 function renderTable(rows) {
   const tbody = qs("#animal-table tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
+
   (rows || []).forEach(a => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -203,6 +247,7 @@ function renderTable(rows) {
       </td>`;
     tbody.appendChild(tr);
   });
+
   tbody.querySelectorAll("button[data-action='details']").forEach(btn => {
     btn.addEventListener("click", () => openDetails(btn.dataset.id));
   });
@@ -214,73 +259,9 @@ function badgeForGender(g) {
   return "secondary";
 }
 
-/***** Neues Tier speichern *****/
-async function onSaveAnimal(e) {
-  e.preventDefault();
-  const form = e.currentTarget;
 
-  // Native HTML5-Validation
-  if (!form.checkValidity()) {
-    form.classList.add("was-validated");
-    return;
-  }
-
-  const payload = {
-    animal_number: qs("#animal_number").value.trim(),
-    animal_id: qs("#animal_id").value.trim(),
-    birth_date: qs("#birth_date").value || null,
-    gender: qs("#gender").value || null,
-    mother_id: qs("#mother_id").value || null,
-    father_id: qs("#father_id").value || null,
-    [TEAM_FIELD]: currentFarmId
-  };
-
-  const { error } = await supabase.from("animals").insert([payload]);
-  if (error) {
-    console.error(error);
-    toastErr(error.message);
-    return;
-  }
-
-  form.reset();
-  form.classList.remove("was-validated");
-  toastOk("Tier gespeichert");
-  // Elternlisten neu
-  await populateParentSelects();
-  // Liste aktualisieren
-  page = 0;
-  await loadAnimals();
-}
-
-/***** Eltern-Dropdowns *****/
-async function populateParentSelects() {
-  const selM = qs("#mother_id");
-  const selF = qs("#father_id");
-  if (!selM || !selF) return;
-
-  const { data, error } = await supabase
-    .from("animals")
-    .select("id, animal_number, gender")
-    .eq(TEAM_FIELD, currentFarmId)
-    .order("animal_number", { ascending: true });
-
-  selM.innerHTML = '<option value="">Unbekannt</option>';
-  selF.innerHTML = '<option value="">Unbekannt</option>';
-
-  if (error) return;
-
-  (data || []).forEach(a => {
-    const o = document.createElement("option");
-    o.value = a.id;
-    o.textContent = `${a.animal_number} (${a.gender})`;
-    selM.appendChild(o.cloneNode(true));
-    selF.appendChild(o);
-  });
-}
-
-/***** Details öffnen *****/
+/***** Details + Behandlungen + Stammbaum *****/
 async function openDetails(id) {
-  // Hole Tier
   const { data: a, error } = await supabase
     .from("animals")
     .select("id, animal_number, animal_id, birth_date, gender, mother_id, father_id")
@@ -293,24 +274,21 @@ async function openDetails(id) {
   }
   currentAnimal = a;
 
-  // Befülle Modal
   qs("#detail-animal-number").textContent = a.animal_number ?? "—";
   qs("#detail-animal-id").textContent = a.animal_id ?? "—";
   qs("#detail-birth-date").textContent = fmtDate(a.birth_date) || "—";
   qs("#detail-gender").textContent = a.gender ?? "—";
 
-  // Behandlungen laden
   await loadTreatmentsForAnimal(a.id);
-
-  // Stammbaum-Button
-  qs("#show-pedigree").onclick = () => loadPedigree(a.id);
+  const btn = qs("#show-pedigree");
+  if (btn) btn.onclick = () => loadPedigree(a.id);
 
   new bootstrap.Modal(qs("#animalModal")).show();
 }
 
-/***** Behandlungen laden (Liste im Modal) *****/
 async function loadTreatmentsForAnimal(animalId) {
   const list = qs("#treatment-list");
+  if (!list) return;
   list.innerHTML = "<li class='list-group-item text-muted'>Laden…</li>";
 
   const { data, error } = await supabase
@@ -338,7 +316,7 @@ async function loadTreatmentsForAnimal(animalId) {
   });
 }
 
-/***** Stammbaum laden (2 Ebenen) – Hook, erweiterbar *****/
+/***** Stammbaum (2 Ebenen – erweiterbar) *****/
 async function loadPedigree(animalId) {
   const { data: animal } = await supabase
     .from("animals")
@@ -372,6 +350,7 @@ async function loadPedigree(animalId) {
 
 function renderPedigree(treeData) {
   const container = qs("#pedigree-container");
+  if (!container) return;
   container.style.display = "block";
 
   const svg = d3.select("#pedigree-chart");
@@ -385,7 +364,6 @@ function renderPedigree(treeData) {
   const treeLayout = d3.tree().size([width - 40, height - 40]);
   treeLayout(root);
 
-  // Links
   svg.append("g")
     .selectAll("line")
     .data(root.links())
@@ -397,7 +375,6 @@ function renderPedigree(treeData) {
     .attr("y2", d => d.target.y + 20)
     .attr("stroke", "#6c757d");
 
-  // Nodes
   const node = svg.append("g")
     .selectAll("g")
     .data(root.descendants())
@@ -405,10 +382,7 @@ function renderPedigree(treeData) {
     .append("g")
     .attr("transform", d => `translate(${d.x + 20},${d.y + 20})`);
 
-  node.append("circle")
-    .attr("r", 18)
-    .attr("fill", "#198754");
-
+  node.append("circle").attr("r", 18).attr("fill", "#198754");
   node.append("text")
     .attr("dy", 5)
     .attr("text-anchor", "middle")

@@ -1,7 +1,363 @@
+/* app.css  —  Zentrales Styling für Farm Manager
+   - Mobile-first Layout
+   - Einheitliches grünes Farbschema
+   - Lesbare Typografie (Roboto)
+   - Bessere Touch-Ziele & spacing
+   - Responsive Tabellen, Karten, Modals
+   - Utility-Klassen & Dark-Mode-Vorbereitung
+*/
+
+/* -------------------- Basis & Theme -------------------- */
+:root {
+  /* Brand-Farben (anpassbar) */
+  --brand-green: #198754;        /* Bootstrap "success" */
+  --brand-green-600: #157347;
+  --brand-green-100: #e8f5ee;
+  --brand-accent: #2bb673;       /* frisches Grün */
+  --brand-bg: #f7faf8;           /* seichtes Hintergrundgrau mit grünem Touch */
+
+  /* Textfarben */
+  --text-primary: #1f2937;       /* etwas weicher als tiefschwarz */
+  --text-muted: #6b7280;
+
+  /* Karten & Ränder */
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --radius: 14px;
+
+  /* Schatten */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 6px 16px rgba(0,0,0,.08);
+
+  /* Spacing */
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+}
+
+html, body {
+  height: 100%;
+  background: var(--brand-bg);
+}
+
 body {
-    font-family: Arial, sans-serif;
+  font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* -------------------- Navbar & Header -------------------- */
+.navbar {
+  background: var(--brand-green) !important;
+  box-shadow: var(--shadow-sm);
+}
+.navbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.navbar .nav-link {
+  color: #e9f7ef !important;
+  padding: .5rem .9rem !important;
+}
+.navbar .nav-link.active,
+.navbar .nav-link:hover {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.08);
+  border-radius: .5rem;
+}
+.navbar .dropdown-menu {
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* Mobile: Navbar-Inhalt angenehmer tappbar */
+@media (max-width: 575.98px) {
+  .navbar .nav-link { padding: .8rem 1rem !important; }
+}
+/* ===== Responsive Umschaltung: Tabelle (Desktop) vs. Karten (Mobile) ===== */
+
+/* Default: Desktop-Ansicht */
+#animal-table-wrapper { display: block; }
+#animal-cards-wrapper { display: none; }
+
+/* Unter 768px: Mobile-Ansicht (Karten) */
+@media (max-width: 767.98px) {
+  #animal-table-wrapper { display: none !important; }
+  #animal-cards-wrapper { display: block !important; }
+  .pagination-controls,
+  #prev-page,
+  #next-page {
+    display: none !important;
   }
-  .card {
-    border-radius: 1rem;
+}
+
+/* Optional: schönes Skelett beim Laden */
+#cards-loading.skeleton {
+  display: none; /* per JS auf block gesetzt, wenn geladen wird – hier Default */
+  background: linear-gradient(90deg, #f2f4f7 25%, #e9edf2 37%, #f2f4f7 63%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+
+/* -------------------- Buttons & Formulare -------------------- */
+.btn-success, .btn-primary {
+  background: var(--brand-green);
+  border-color: var(--brand-green);
+}
+.btn-success:hover, .btn-primary:hover {
+  background: var(--brand-green-600);
+  border-color: var(--brand-green-600);
+}
+.btn-outline-success {
+  color: var(--brand-green);
+  border-color: var(--brand-green);
+}
+.btn-outline-success:hover {
+  color: #fff;
+  background: var(--brand-green);
+  border-color: var(--brand-green);
+}
+
+/* Komfortable Touch-Ziele */
+.btn, .form-control, .form-select {
+  min-height: 44px; /* Apple/Google Empfehlung für Touch */
+  border-radius: 10px;
+}
+
+/* Fokus sichtbar & barrierearm */
+.btn:focus, .form-control:focus, .form-select:focus {
+  box-shadow: 0 0 0 .2rem rgba(25,135,84,.25);
+  outline: none;
+}
+
+/* Labels & Hilfstext */
+.form-label { font-weight: 500; }
+.form-text, .form-hint, small.text-muted { color: var(--text-muted) !important; }
+
+/* -------------------- Cards, Container & Layout -------------------- */
+.container { max-width: 1200px; }
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  background: var(--brand-green);
+  color: #fff;
+  border-top-left-radius: var(--radius) !important;
+  border-top-right-radius: var(--radius) !important;
+}
+.card-body { padding: var(--space-6); }
+
+/* Abschnittsabstände */
+.section { margin-bottom: var(--space-8); }
+
+/* -------------------- Tabellen (responsive) -------------------- */
+.table-responsive { border-radius: var(--radius); }
+.table {
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: #f9fafb;
+  z-index: 1;
+  font-weight: 600;
+  border-bottom-width: 2px;
+}
+.table-hover tbody tr:hover {
+  background: #f3faf6;
+}
+
+/* Mobile: Tabelle als Karten-Listendarstellung (optional) */
+@media (max-width: 575.98px) {
+  .table-stack tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .35rem .75rem;
+    padding: .75rem;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    margin-bottom: .75rem;
   }
-  
+  .table-stack thead { display: none; }
+  .table-stack td { border: none !important; padding: 0 !important; }
+  .table-stack td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+}
+
+/* -------------------- Modals -------------------- */
+/* kleine Geräte: Modal fullscreen-ähnlich */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+  .modal-content {
+    min-height: 100vh;
+    border-radius: 0;
+  }
+  .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+}
+
+/* -------------------- Accordions -------------------- */
+.accordion-item {
+  border-radius: var(--radius) !important;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: .75rem;
+}
+.accordion-button {
+  padding: .9rem 1rem;
+  font-weight: 500;
+}
+.accordion-button:not(.collapsed) {
+  background-color: var(--brand-green-100);
+  color: var(--text-primary);
+}
+
+/* -------------------- Pedigree / Diagramme -------------------- */
+#pedigree-container {
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+#pedigree-chart {
+  width: 100%;
+  height: auto;
+  max-height: 50vh; /* auf Handy nicht zu groß */
+}
+
+/* -------------------- Utilities -------------------- */
+.shadow-sm { box-shadow: var(--shadow-sm) !important; }
+.shadow-md { box-shadow: var(--shadow-md) !important; }
+
+.text-muted-soft { color: var(--text-muted) !important; }
+.bg-brand-soft { background: var(--brand-green-100) !important; }
+
+.rounded-xl { border-radius: 20px !important; }
+.w-100p { width: 100% !important; }
+
+.hide-mobile { display: none !important; }
+@media (min-width: 768px) {
+  .hide-mobile { display: initial !important; }
+  .hide-desktop { display: none !important; }
+}
+
+.sticky-actions {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: .75rem;
+  border-top: 1px solid var(--card-border);
+  z-index: 3;
+}
+
+/* -------------------- Toasts/Alerts Styling -------------------- */
+.toast {
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+.alert-success {
+  background: #e8f7ef;
+  border-color: #c9edd9;
+  color: #0f5132;
+}
+.alert-danger {
+  background: #fde8e8;
+  border-color: #f8c4c4;
+  color: #842029;
+}
+
+/* -------------------- Footer (optional) -------------------- */
+.site-footer {
+  border-top: 1px solid var(--card-border);
+  color: var(--text-muted);
+  padding: var(--space-4) 0;
+  font-size: .95rem;
+}
+
+/* -------------------- Dark Mode (optional vorbereitet) -------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand-bg: #0f172a;
+    --text-primary: #e5e7eb;
+    --text-muted: #94a3b8;
+    --card-bg: #111827;
+    --card-border: #1f2937;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.6);
+    --shadow-md: 0 6px 16px rgba(0,0,0,.5);
+  }
+  body { background: var(--brand-bg); color: var(--text-primary); }
+  .navbar .nav-link { color: #d1fae5 !important; }
+  .table thead th { background: #0b1220; }
+  .table-hover tbody tr:hover { background: #0f1a2b; }
+  .modal-content { background: var(--card-bg); border-color: var(--card-border); }
+}
+
+#animal-search-wrapper {
+  position: relative;
+}
+
+/* Dropdown soll direkt unterhalb des Eingabefelds erscheinen */
+#animal-results {
+  position: absolute;
+  top: 100%;          /* direkt unterhalb des Inputs */
+  left: 0;
+  right: 0;
+  z-index: 1000;      /* über allem anderen */
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 2px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+  border: 1px solid #d1e7dd;
+}
+
+/* Wenn Dropdown sichtbar */
+#animal-results.show {
+  display: block;
+}
+
+/* Damit die ausgewählten Tiere schön unten drunter bleiben */
+#selected-animals {
+  position: relative;     /* bleibt im Fluss */
+  margin-top: calc(260px + 1rem); /* Platz, wenn Dropdown offen (wird per JS dynamisch gleich besser gelöst) */
+}
+
+
+#animal-results {
+  position: static; /* statt absolute */
+  display: none;
+}
+
+#animal-results.show {
+  display: block;
+  margin-top: .5rem;
+}
