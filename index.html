@@ -11,86 +11,89 @@
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="index.html">🐄 Farm Manager</a>
+  <div class="container-fluid">
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <!-- Brand -->
+    <a class="navbar-brand" href="/FarmManagementApp2025/index.html">🐄 Farm Manager</a>
 
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav me-auto">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-          <!-- Dashboard -->
-          <li class="nav-item">
-            <a class="nav-link" data-nav="dashboard" href="../animals/">Dashboard</a>
-          </li>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
 
-          <!-- Tiere -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-nav="tiere" href="#" data-bs-toggle="dropdown" role="button">
-              Tiere
-            </a>
-            <ul class="dropdown-menu">
-              <li><span class="dropdown-item-text submenu-title">Übersicht</span></li>
-              <li><a class="dropdown-item" data-subnav="overview" href="./animals/animals.html">Tiere – Übersicht</a></li>
-              <li><hr class="dropdown-divider" /></li>
-              <li><span class="dropdown-item-text submenu-title">Dateneingabe</span></li>
-              <li><a class="dropdown-item" data-subnav="inseminations" href="./animals/inseminations.html">Besamung</a></li>
-              <li><a class="dropdown-item" data-subnav="pregnancy_tests" href="./animals/pregnancy_tests.html">Trächtigkeitsuntersuchung</a></li>
-              <li><a class="dropdown-item" data-subnav="calving" href="./animals/calving.html">Geburt</a></li>
-            </ul>
-          </li>
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a class="nav-link" href="/FarmManagementApp2025/index.html">Dashboard</a>
+        </li>
 
-          <!-- Behandlungen -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-nav="behandlungen" data-href="#" data-bs-toggle="dropdown" role="button">
-              Behandlungen
-            </a>
-            <ul class="dropdown-menu">
-              <li><span class="dropdown-item-text submenu-title">Übersicht</span></li>
-              <li><a class="dropdown-item" data-subnav="overview" href="/treatments/treatments.html">Behandlungen – Übersicht</a></li>
-              <li><hr class="dropdown-divider" /></li>
-              <li><span class="dropdown-item-text submenu-title">Dateneingabe</span></li>
-              <li><a class="dropdown-item" data-subnav="vaccinations" href="./treatments/vaccinations.html">Impfung</a></li>
-              <li><a class="dropdown-item" data-subnav="treat" href="./treatments/treatments.html">Behandeln</a></li>
-              <li><a class="dropdown-item" data-subnav="examinations" href="./treatments/examinations.html">Untersuchen</a></li>
-              <li><a class="dropdown-item" data-subnav="medications" href="./treatments/medications.html">Medikamente</a></li>
-            </ul>
-          </li>
+        <!-- Tiere -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Tiere</a>
+          <ul class="dropdown-menu">
+            <li><span class="dropdown-item-text submenu-title">Übersicht</span></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/animals/animals.html">Tiere – Übersicht</a></li>
 
-          <!-- Bewegungen -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-nav="bewegungen" href="#" data-bs-toggle="dropdown" role="button">
-              Bewegungen
-            </a>
-            <ul class="dropdown-menu">
-              <li><span class="dropdown-item-text submenu-title">Übersicht</span></li>
-              <li><a class="dropdown-item" data-subnav="overview" href="./movements/movements.html">Bewegungen – Übersicht</a></li>
-              <li><hr class="dropdown-divider" /></li>
-              <li><span class="dropdown-item-text submenu-title">Dateneingabe</span></li>
-              <li><a class="dropdown-item" data-subnav="move" href="./movements/move.html">Tier verschieben</a></li>
-              <li><a class="dropdown-item" data-subnav="locations" href="./movements/locations.html">Neuen Ort hinzufügen</a></li>
-              <li><a class="dropdown-item" data-subnav="intake" href="./movements/intake.html">Zugang</a></li>
-              <li><a class="dropdown-item" data-subnav="exit" href="./movements/exit.html">Abgang</a></li>
-            </ul>
-          </li>
-        </ul>
-
-        <!-- Profil -->
-        <div class="dropdown">
-          <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
-            <span id="navbar-username">Profil</span>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><button class="dropdown-item" id="show-profile" data-bs-toggle="modal" data-bs-target="#profileModal">Profil anzeigen</button></li>
             <li><hr class="dropdown-divider"></li>
-            <li><button id="logout-btn" class="dropdown-item text-danger">Logout</button></li>
+            <li><span class="dropdown-item-text submenu-title">Dateneingabe</span></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/animals/inseminations.html">Besamung</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/animals/pregnancy_tests.html">Trächtigkeitsuntersuchung</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/animals/calving.html">Geburt</a></li>
           </ul>
-        </div>
+        </li>
+
+        <!-- Behandlungen -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Behandlungen</a>
+          <ul class="dropdown-menu">
+            <li><span class="dropdown-item-text submenu-title">Übersicht</span></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/treatments/treatments.html">Behandlungen – Übersicht</a></li>
+
+            <li><hr class="dropdown-divider"></li>
+            <li><span class="dropdown-item-text submenu-title">Dateneingabe</span></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/treatments/vaccinations.html">Impfung</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/treatments/treatments.html">Behandeln</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/treatments/examinations.html">Untersuchen</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/treatments/medications.html">Medikamente</a></li>
+          </ul>
+        </li>
+
+        <!-- Bewegungen -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Bewegungen</a>
+          <ul class="dropdown-menu">
+            <li><span class="dropdown-item-text submenu-title">Übersicht</span></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/movements/movements.html">Bewegungen – Übersicht</a></li>
+
+            <li><hr class="dropdown-divider"></li>
+            <li><span class="dropdown-item-text submenu-title">Dateneingabe</span></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/movements/move.html">Tier verschieben</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/movements/locations.html">Neuen Ort hinzufügen</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/movements/intake.html">Zugang</a></li>
+            <li><a class="dropdown-item" href="/FarmManagementApp2025/movements/exit.html">Abgang</a></li>
+          </ul>
+        </li>
+
+      </ul>
+
+      <!-- Profil -->
+      <div class="dropdown">
+        <button class="btn btn-outline-light dropdown-toggle" type="button"
+                id="userMenu" data-bs-toggle="dropdown">
+          <span id="navbar-username">Profil</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><button class="dropdown-item" id="show-profile" data-bs-toggle="modal" data-bs-target="#profileModal">Profil anzeigen</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button id="logout-btn" class="dropdown-item text-danger">Logout</button></li>
+        </ul>
       </div>
+
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <!-- Mobile Quick Actions (Ebene 2 Schnellzugriff) – optional -->
   <div id="subactions" class="d-md-none">
